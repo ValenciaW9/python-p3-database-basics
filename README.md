@@ -1,273 +1,179 @@
-# Database Basics
+# RegEx Basics
 
 ## Learning Goals
 
-- Use SQL to store data and retrieve it later on.
-- Use SQLite to build relational databases on your computer.
+- Build patterns using regular expressions.
 
 ***
 
 ## Key Vocab
 
-- **SQL (Structured Query Language)**: a programming language that is used to
-  manage relational databases and perform operations on the data that they contain.
-- **Relational Database**: a collection of data that is organized in
-  well-defined relationships. The most common type of database.
-- **Query**: a statement used to return data from a database.
-- **Table**: a collection of related data in a database. Composed of rows and
-  columns. Similar to a class in Python.
-- **Row**: a single record in a database table. Each column represents an
-  attribute of the record. Similar to an object in Python.
-- **Column**: a single field in a database table. Each row contains values in
-  each column. Similar to a Python object’s attributes.
-- **Schema**: a blueprint of the construction of the tables in a database and
-  how they relate to one another.
+- **Regular Expression**: a sequence of characters used to search for a pattern
+inside of a string.
+- **Pattern**: a description of sequences of characters that share certain
+traits with one another. Sequences do not need to be the same length or share
+any common characters to pattern match. Also called a **filter**.
 
 ***
 
 ## Introduction
 
-We'll cover how to create and delete database tables in SQLite as well as how to
-add columns to an existing table.
+In this lesson, we're going to learn the syntax and basic vocabulary of regular
+expressions. We'll start simple and build from there. A great place to head for
+RegEx testing and practice is _[regex101][regex101]_ - it allows
+you to build and test regular expressions against text that you define. In a
+separate window, open up _regex101_. In the text box labeled
+"insert your test string here", paste in the following monologue from
+Shakespeare's _The Merchant of Venice_:
 
-***
+> If to do were as easy as to know what were good to do, chapels had been House
+> of worshipes and poor men's cottages princes' palaces. It is a good divine
+> that follows his own instructions: I can easier teach twenty what were good
+> to be done, than be one of the twenty to follow mine own teaching. The brain
+> may devise laws for the blood, but a hot temper leaps o'er a cold decree:
+> such a hare is madness the youth, to skip o'er the meshes of good counsel the
+> cripple. But this reasoning is not in the fashion to choose me a Spouse or
+> partner. O me, the word 'choose!' I may neither choose whom I would nor
+> refuse whom I dislike; so is the will of a living daughter curbed by the will
+> of a dead father. Is it not hard, Nerissa, that I cannot choose one nor
+> refuse none?
 
-## Database Structure
+Your window should look like this: ![regex101 setup](https://curriculum-content.s3.amazonaws.com/python/regex101_setup.png)
 
-Relational Databases like SQLite store data in a structure we refer to as a
-table. You can think of a table in a database a lot like you would a
-spreadsheet. We define specific columns in our table, and then we store any
-number of what we refer to as 'records' as rows in our database. A record is
-just information referring to one specific entity. For instance, if you had a
-table called "People" you could imagine a structure like this:
+## Writing Regular Expressions
 
-| name | age | email                   |
-| ---- | --- | ----------------------- |
-| Bob  | 29  | bob@flatironschool.com  |
-| Avi  | 28  | avi@flatironschool.com  |
-| Adam | 28  | adam@flatironschool.com |
+In Python, regular expressions require you to use the `re` module from the
+standard library. Remember that when we say that a module comes from the
+_standard library_, it means that it was downloaded onto our computer when we
+installed Python. We still need to `import` it, but we do not need to include
+it in our Pipfile.
 
-Each column has a name, and each row contains the corresponding information
-about a person.
-
-Thinking to what you've learned already about object oriented Python, you can also
-imagine how we might connect the idea of a **table** in SQL to a **class** in
-Python, and a **record** within a table to an **instance** of a class, or
-**object**. For the example above, our Python representation of those same
-objects might look like this:
+All regular expressions in Python begin with an "r" before the pattern to be
+matched:
 
 ```py
-class Person:
-    def __init__(self, name, age, email)
-        self.name = name
-        self.age = age
-        self.email = email
-
-bob = Person("Bob", 29, "bob@flatironschool.com")
-avi = Person("Avi", 28, "avi@flatironschool.com")
-adam = Person("Adam", 28, "adam@flatironschool.com")
+pattern = r'abc'
 ```
+
+This "r" stands for _raw_, which means that escape characters such as
+backslashes (`\`) are read and not ignored. This expands the number of
+characters that can go into a pattern and allows you to search for patterns
+with greater flexibility.
+
+### Simple Text Matching
+
+Let's start with the simplest text matching. Select `</> Python` in the
+"Flavor" column on the left and enter the following RegEx (regex101 will
+provide the "r" and quotes for you):
+
+```py
+r'twenty'
+```
+
+![twenty regex](https://curriculum-content.s3.amazonaws.com/python/twenty-regex101.png)
+
+Notice that the pattern matches the two instances of "twenty" in the passage.
+Writing a series of letters or numbers in your regular expression will result
+in a search for exact matches of this pattern anywhere in the string.
+
+### Metacharacters
+
+The real beauty of regular expressions is revealed in their use of
+metacharacters. Metacharacters allow you to use a pre-defined shorthand to
+match specific characters. For example, `\d` will match any digit in your text,
+and `\w` will match any word character (letters, numbers, and underscores). The
+'RegEx Quick Reference' at the bottom-right corner of regex101 shows
+metacharacters and patterns that you can use. Play around with these a little.
+Use `\W` (notice uppercasing) to match the non-word characters in your text.
 
 <details>
   <summary>
-    <em>Would <code>age</code> be an example of a table, row, or column in
-        SQL?</em>
+    <em>Which character in the constructor of a RegEx pattern allows the
+        interpreter to read backslashes?</em>
   </summary>
 
-  <h3>Column!</h3>
-  <p>Tables are like Python classes, rows are like objects, and columns are like
-     attributes.</p>
+  <h3>"r" (for <em>raw</em>)</h3>
+  <p>Sometimes we need to match types of characters (digits
+     <code>\d</code>, whitespace <code>\s</code>) or characters that represent
+     types of characters (<code>.</code> matches any character). Reading
+     patterns as raw text allows the interpreter to match a wide array of
+     strings in as few characters as possible.</p>
 </details>
 <br/>
 
-### Note on Column Names
+### Only specific characters
 
-When we name columns in our database, there are a couple of conventions we will
-follow. The first is that we will always use **lowercase letters** when
-referring to column names in our database. SQLite isn't case sensitive about its
-commands or column names, but it is generally best practice for us to stick to
-lowercase for our column names.
+If I want to match all instances of vowels in a string, the RegEx `r'aeiou'`
+won't work (feel free to try it), as it will only match the entire string
+"aeiou" - which clearly isn't in our text. Instead let's use square brackets:
+`r'[aeiou]'` - this is looking for only **one single** character in our text
+which matches any of the characters inside the square brackets. If you add
+this RegEx to our regex101, you'll see every vowel highlighted in your match
+result.
 
-The second convention we want to follow is more important. That is, when we have
-multiple words in a column name, we link them together using underscores rather
-than spaces. We call this convention **snake case**. So, for instance, if we
-wanted to be more specific with our email column above, we can name it
-email_address. If we wanted to split up name to first and last we might have
-columns called `first_name` and `last_name`.
+### Ranges
+
+Based on what we've just learned, we can write a regular expression looking for
+single characters in the first 10 letters of the alphabet like so:`r'[abcdefghij]'`
+We can actually shorten this in Python using a RegEx range:`r'[a-j]'`.
+
+`r'[0123456789]'` becomes `r'[0-9]'`.
+
+A useful range to remember is `r'[A-z]'`. This represents all letters, both
+capital and lowercase.
+
+### Example: Double Vowels
+
+There are many other metacharacters and ways of building patterns in RegEx,
+many of which you can refer in the regex101 quick reference guide. However, the
+best way to actually learn to use regular expressions is to practice building
+your own patterns. Let's look for instances in our text of two consecutive
+vowels (for example, 'ae', 'ie', 'oo', etc). The longest way to do this is to
+hand code the different combinations of two vowels:
+`r'aa|ae|ai|ao|au|ea|ee|ei|eo|eu|ia|ie'`. It's pretty tedious to hand code each
+of these combinations (_I certainly didn't finish_). An improvement is to use
+two sets of square brackets with vowels, each one representing a single character:
+`r'[aeiou][aeiou]'`. Our most efficient, however, is to use repetitions:
+`r'[aeiou]{2}'` The curly braces surrounding mean that the pattern or character
+directly preceding it must repeat that number of times. As such, we're looking
+for a repeat of a vowel two times. As you can see, there are many ways to write
+a regular expression that does the same thing.
+
+<details>
+  <summary>
+    <em>How would you write a RegEx to search for two digit numbers with
+        neither number greater than 5?</em>
+  </summary>
+
+  <h3><code>r'[0-5]{2}'</code></h3>
+  <p>Remember that we use square brackets to denote ranges and curly braces to
+     denote repetitions.</p>
+  <p><em>Fun Fact: All jersey numbers in college basketball must follow this
+     pattern. This stems from the olden days when referees needed to reference
+     players by jersey number with nothing but their hands!</em></p>
+</details>
+<br/>
 
 ***
 
-## Database Tables
+## Conclusion
 
-In the following sections, we'll cover how to create, alter, and delete database
-tables. This reading is accompanied by a code along exercise that you can do in
-your terminal. You don't need to fork this repository, and there are no tests to
-pass. Follow along with the reading and code along instructions.
+In this lesson, we have explored the basics of constructing RegEx patterns in
+Python. In subsequent lessons, we will put these rules into action as we
+explore the methods of the `re` module in Python's standard library.
 
-### Create Table
+For more practice, return to the earlier monologue from _The Merchant of
+Venice_: with a bit of dedication, you should be able to match the whole
+excerpt!
 
-When we create a new database, it comes like a sort of blank slate. We can then
-create a table inside our database using the following statement:
-
-```sql
-CREATE TABLE table_name;
-```
-
-But before we're able to store any actual data in a table, we'll need to define
-the columns in the table as well as the specific type of data each column will
-store.
-
-Let's give it a shot. For the purposes of this code along, you'll be typing
-these commands into your terminal.
-
-### Code Along 1: Creating a Table
-
-In the terminal let's create our new database and start `sqlite3` by running the
-following:
-
-```console
-$ sqlite3 pet_database.db
-```
-
-Now, at our SQLite prompt, let's create our table:
-
-```sql
-CREATE TABLE cats;
-```
-
-You should see the following error:
-
-```console
-Error: near ";": syntax error
-```
-
-SQLite expects us to include at least some definition of the structure of this
-table as well. In other words, when we create database tables, we need to
-specify some column names, along with the type of data we are planning to store
-in each column. More on data types later.
-
-Let's try that table statement again:
-
-```sql
-CREATE TABLE cats (
-  id INTEGER PRIMARY KEY,
-  name TEXT,
-  age INTEGER
-);
-```
-
-Let's break down the above code:
-
-1. Use the `CREATE TABLE` command to create a new table called "cats".
-2. Include a list of column names along with the type of data they will be
-   storing. `TEXT` means we'll be storing plain old text, `INTEGER` means we'll
-   store a number. Note that the use of capitalization is arbitrary, but it is a
-   convention to help separate the SQL commands from the names we make up for
-   our tables and columns.
-3. Every table we create, regardless of the other column names and data types,
-   should be defined with an id INTEGER PRIMARY KEY column, including the
-   integer data type and primary key designation. Our SQLite database tables
-   _must be indexed by a number_. We want each row in our table to have a
-   number, which we'll call "id", just like in an Excel spreadsheet. Numbering
-   our table rows makes our data that much easier to access, update, and
-   organize. SQLite comes with a data type designation called "Primary Key".
-   Primary keys are unique and auto-incrementing, meaning they start at 1 and
-   each new row automatically gets assigned the next numeric value.
-
-Okay, let's check and make sure that we successfully created that table. To do
-this we'll be using SQL commands. To get a complete list of commands, you can
-type `.help` into the sqlite prompt.
-
-![Sqlite help output](https://curriculum-content.s3.amazonaws.com/phase-3/database-basics/sqlite-help.png)
-
-Wow, that's a lot. Don't worry too much about all of these different commands
-right now. Just know that you can always use `.help` to check out the available
-options.
-
-Okay, let's check out our new table. To list all the tables in the database
-we'll use the `.tables` command. Type it into the sqlite prompt and hit enter,
-and you should see our `cats` table listed.
-
-We can look at the structure, or "schema", of our database (i.e. the tables and
-their columns + column data types) with the `.schema` command:
-
-```sql
-sqlite> .schema
-CREATE TABLE cats (
-  id INTEGER PRIMARY KEY,
-  name TEXT,
-  age INTEGER
-);
-```
-
-You can also use the SQLite VSCode extension, or DB Browser for SQLite, to see a
-visual representation of the table. There won't be much to look at yet, since we
-haven't added any data to the table; but you will be able to see the structure
-of the table.
-
-Let's move on to altering our table.
-
-### Alter Table
-
-Let's say that, after creating a database and creating a table to live inside
-that database, we decide we want to add or remove a column. We can do so with
-the `ALTER TABLE` statement.
-
-### Code Along 2: Adding, Removing and Renaming Columns
-
-Let's say we want to add a new column, `breed`, to our `cats` table:
-
-```sql
-ALTER TABLE cats ADD COLUMN breed TEXT;
-```
-
-Let's check out our schema now:
-
-```sql
-sqlite> .schema
-CREATE TABLE cats (
-  id INTEGER PRIMARY KEY,
-  name TEXT,
-  age INTEGER,
-  breed TEXT
-);
-```
-
-Notice that the `ALTER` statement isn't here, but instead SQLite has updated our
-original `CREATE` statement. The schema reflects the current structure of the
-database, which is reflected as the CREATE statement necessary to create that
-structure.
-
-Unfortunately, altering a column name and/or deleting a column can be tricky in
-SQLite3. There are workarounds, however. We're not going to get into that right
-now, but you can explore the
-[documentation on this topic](https://www.sqlite.org/lang_altertable.html).
-
-Fortunately, SQLite still supports most of what we'll need one way or another.
-For now, if you need to change a column name, it's best to simply delete the
-table and re-create it.
-
-### Drop Table
-
-Lastly, we'll discuss how to delete a table from a database with the
-`DROP TABLE` statement.
-
-### Code Along 3: Deleting a Table
-
-Deleting a table is very simple:
-
-```sql
-DROP TABLE cats;
-```
-
-And that's it! You can exit out of the sqlite prompt with the `.quit` command.
+> NOTE: You could certainly match the whole monologue with the simple RegEx
+> `r'.*'`. But where's the fun in that?
 
 ***
 
 ## Resources
 
-- [SQL Tutorial - W3Schools](https://www.w3schools.com/sql/)
-- [Documentation - SQLite](https://www.sqlite.org/docs.html)
-- [SQLite - VisualStudio Marketplace](https://marketplace.visualstudio.com/items?itemName=alexcvzz.vscode-sqlite)
-- [SQLite Keywords - SQLite](https://www.sqlite.org/lang_keywords.html)
-- [ZetCode sqlite3 Tutorial](http://zetcode.com/db/sqlite/)
+- [re - Regular expression operations - Python](https://docs.python.org/3/library/re.html)
+- [regex101][regex101]
+
+[regex101]: https://regex101.com/
